@@ -41,17 +41,17 @@ either expressed or implied, of the FreeBSD Project.
 public class Magnet : MonoBehaviour {
 
   #region Editable properties
-  public Transform _attract = null;
-  public Transform _target = null;
+  public Transform _attract = null;	// Set this to be the object that should be attracted or repelled (e.g. a camera transform)
+  public Transform _target = null;	// This object will be referred to when updating the magnet's own position
 
-  public Vector3 _targetOffset = new Vector3(-1f,2.5f,-5f);
-  public float _controlSensitivity = 625f;
+  public Vector3 _targetOffset = new Vector3(-1f,2.5f,-5f);	// The magnet will be offset from the target by a rotated version of this offset
+  public float _controlSensitivity = 625f;	// How strongly we react to mouse input when in 'steering' mode
 
-  public float _attractSpeed = 10f;
-  public float _attractRotationSpeed = 360f;
+  public float _attractSpeed = 10f;	// How quickly the attracted object moves to the magnet's position
+  public float _attractRotationSpeed = 360f;	// How quickly the attracted object turns to match the magnet's orientation 
 
-  public float _repelSpeed = 10f;
-  public float _repelRotationSpeed = 360f;
+  public float _repelSpeed = 10f; // How quickly the attracted object moves back to its original position
+  public float _repelRotationSpeed = 360f; // How quickly the attracted object turns to its original orientation.
 
   #endregion // Editable properties
 
@@ -63,9 +63,10 @@ public class Magnet : MonoBehaviour {
   }
   Mode _mode;
 
-	private Vector3 _attractInitialPos;
+	private Vector3 _attractInitialPos;		// Saved state: gathered in idle, used during repulsion.
 	private Quaternion _attractInitialRot;
-	private float _angle;
+
+	private float _angle;					// Current 'steering' angle.
 
 	// Use this for initialization
 	void Start () {
@@ -89,6 +90,7 @@ public class Magnet : MonoBehaviour {
 		}
 	}
 
+	// A little debug information
 	void OnGUI()
 	{
 		Rect r = new Rect(20f,20f,200f,200f);
@@ -98,12 +100,15 @@ public class Magnet : MonoBehaviour {
 		GUILayout.EndArea();
 	}
 
+	// Moves the magnet, should the target or steering value change.
 	void UpdateTransform()
 	{
 		transform.rotation = Quaternion.Euler(0f, _angle, 0f);
 		transform.position = transform.rotation * _targetOffset + _target.position;
 	}
 
+	// We do nothing in idle state until a click is detected. Once done, we save transform information and start moving
+	// the attracted object.
 	void UpdateIdle(bool click)
 	{
 		if (click) {
@@ -113,6 +118,8 @@ public class Magnet : MonoBehaviour {
 		}
 	}
 
+	// Used to smoothly adjust the position of the attracted object during attraction and repulsion phases.
+	// Returns true once the target has been achieved.
 	bool Move(Vector3 target, float speed)
 	{
 		bool close = false;
@@ -128,6 +135,8 @@ public class Magnet : MonoBehaviour {
 		return close;
 	}
 
+	// Used to smoothly rotate the attracted object during attraction and repulsion phases.
+	// Returns true once the target has been achieved.
 	bool Rotate(Quaternion target, float speed)
 	{
 		bool close = false;
@@ -142,6 +151,7 @@ public class Magnet : MonoBehaviour {
 		return close;
 	}
 
+	// Unless the control is released, we move the attracted object to the target. Once there, we enter 'steering' mode.
 	void UpdateAttracting(bool click)
 	{
 		if (click) {
@@ -155,6 +165,7 @@ public class Magnet : MonoBehaviour {
 		}
 	}
 
+	// React to mouse input, rotating the magnet point around the target reference.
 	void UpdateSteering(bool click)
 	{
 		if (click) {
@@ -166,6 +177,8 @@ public class Magnet : MonoBehaviour {
 		}
 	}
 
+	// In repulsion mode, unless a new click is detected, we move the attracted object back to its initial state.
+	// Once the target is achieved, we reenter the idle state.
 	void UpdateRepelling(bool click)
 	{
 		if (click) {
