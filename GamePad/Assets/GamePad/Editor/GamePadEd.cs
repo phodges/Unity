@@ -43,7 +43,7 @@ namespace GP {
 		private SerializedObject _inputManager;
 		private SerializedProperty _axesArray;
 
-		[MenuItem("GamePad/Configure")]
+		[MenuItem("Window/GamePad/Configure")]
 		static void ShowGamePadEd() {
 			GamePadEd window = GamePadEd.GetWindow<GamePadEd>();
 			window.Show ();

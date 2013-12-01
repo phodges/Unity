@@ -57,6 +57,20 @@ namespace GP {
 		public int Id { get; private set; }
 	}
 
+	[AttributeUsage(AttributeTargets.Field)]
+	public class AxisToButtonMapping : Attribute {
+
+		public AxisToButtonMapping(Button role, int axisIndex, bool reflect = false) {
+			Role = role;
+			AxisIndex = axisIndex;
+			Reflected = reflect;
+		}
+
+		public Button Role { get; private set; }
+		public int AxisIndex { get; private set; }
+		public bool Reflected { get; private set; }
+	}
+
 	/// <summary>
 	/// The abstract game pad class provides method to query stick and button status.
 	/// Reflection is used to gather button IDs from derived classes, caching key code 
@@ -71,9 +85,40 @@ namespace GP {
 
 		private Dictionary<Button, string> _keycodes = new Dictionary<Button, string>();
 
+		enum MappedAxisState {
+			Idle,
+			Up,
+			Down,
+			Held
+		}
+
+		class MappedAxis {
+			public string Keycode;
+			public MappedAxisState State;
+			public bool Reflected;
+		}
+
+		private Dictionary<Button, MappedAxis> _mappedAxes = new Dictionary<Button, MappedAxis>();
+
 		void Start() {
+			BuildSupportedAxes();
 			CompileInputNames();
 		}
+
+		void OnEnable() {
+			if (0 < _mappedAxes.Count) {
+				ClearAnalogueButtonsState();
+				StartCoroutine(PollAnalogueButtons());
+			}
+		}
+
+		void OnDestroy() {
+			StopCoroutine("PollAnalogueButtons");
+		}
+
+		protected abstract void BuildSupportedAxes();
+
+		public abstract string[] SupportedAxes { get; protected set; }
 
 		public Vector2 GetLeftStick() {
 			return new Vector2(Input.GetAxis(LeftStickHorizontalName), Input.GetAxis(LeftStickVerticalName));
@@ -86,6 +131,11 @@ namespace GP {
 			string keycode;
 			if (_keycodes.TryGetValue(button, out keycode)) {
 				held = Input.GetKey(keycode);
+			} else {
+				MappedAxis mapping;
+				if (_mappedAxes.TryGetValue(button, out mapping)) {
+					held = MappedAxisState.Held == mapping.State;
+                }
 			}
 			return held;
 		}
@@ -95,6 +145,11 @@ namespace GP {
 			string keycode;
 			if (_keycodes.TryGetValue(button, out keycode)) {
 				up = Input.GetKeyUp(keycode);
+			} else {
+				MappedAxis mapping;
+				if (_mappedAxes.TryGetValue(button, out mapping)) {
+					up = MappedAxisState.Up == mapping.State;
+				}
 			}
 			return up;
 		}
@@ -104,6 +159,11 @@ namespace GP {
 			string keycode;
 			if (_keycodes.TryGetValue(button, out keycode)) {
 				down = Input.GetKeyDown(keycode);
+			} else {
+				MappedAxis mapping;
+				if (_mappedAxes.TryGetValue(button, out mapping)) {
+					down = MappedAxisState.Down == mapping.State;
+                }
 			}
 			return down;
 		}
@@ -135,7 +195,70 @@ namespace GP {
 					field.SetValue(this, fmt);
 					_keycodes.Add(attr.Role, fmt);
 				}
+
+				attrs = field.GetCustomAttributes(typeof(AxisToButtonMapping), false);
+				string[] axes = SupportedAxes;
+				foreach(object a in attrs) {
+					AxisToButtonMapping attr = a as AxisToButtonMapping;
+					MappedAxis mapping = new MappedAxis();
+					mapping.Keycode = axes[attr.AxisIndex];
+					mapping.Reflected = attr.Reflected;
+					field.SetValue(this, axes[attr.AxisIndex]);
+					_mappedAxes.Add(attr.Role, mapping);
+				}
 			}
+
+			if (0 < _mappedAxes.Count) {
+				StartCoroutine(PollAnalogueButtons());
+			}
+		}
+
+		private void ClearAnalogueButtonsState() {
+			foreach(KeyValuePair<Button,MappedAxis> i in _mappedAxes) {
+				MappedAxis mapping = i.Value;
+				mapping.State = MappedAxisState.Idle;
+				_mappedAxes[i.Key] = mapping;
+			}
+		}
+
+		private IEnumerator PollAnalogueButtons() {
+			const float threshold = 0.1f;
+
+			while (0 < _mappedAxes.Count) {
+				foreach(KeyValuePair<Button, MappedAxis> i in _mappedAxes) {
+					MappedAxis mapping = i.Value;
+					float amount = Input.GetAxis(mapping.Keycode);
+					if (mapping.Reflected) {
+						amount = -amount;
+					}
+					switch (mapping.State) {
+					case MappedAxisState.Idle:
+						if (threshold < amount) {
+							mapping.State = MappedAxisState.Down;
+						}
+						break;
+					case MappedAxisState.Up:
+						if (threshold < amount) {
+							mapping.State = MappedAxisState.Down;
+						} else {
+							mapping.State = MappedAxisState.Idle;
+						}
+						break;
+					case MappedAxisState.Down:
+						if (threshold < amount) {
+							mapping.State = MappedAxisState.Held;
+						}
+						break;
+					case MappedAxisState.Held:
+						if (threshold > amount) {
+							mapping.State = MappedAxisState.Up;
+						}
+						break;
+					}
+				}
+				yield return null;
+			}
+			yield break;
 		}
 	}
 

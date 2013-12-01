@@ -36,7 +36,12 @@ namespace GP {
 
 	/// <summary>
 	/// A simple test class used to verify game pad features.
+	/// To use, create a new scene and attach this component to any object. A single test will be made
+	/// when you run your scene for connection of a pad, so be sure to have it plugged in beforehand.
 	/// Use the 'Q' and 'W' buttons on the keyboard to cycle through pages of game pad state data.
+	/// 
+	/// Remember to configure your game pad in Unity's input manager before running this code.
+	/// Once compiled, you may use the tool provided (Window --> GamePad --> Configure) found in the window menus.
 	/// </summary>
 	public class GamePadTest : MonoBehaviour {
 

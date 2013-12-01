@@ -37,8 +37,8 @@ namespace GP {
 	/// </summary>
 	public class GamePadPS3 : GamePad {
 		public static readonly string DualShockPs3 = "Sony PLAYSTATION(R)3 Controller";
-		public static readonly string RightX = DualShockPs3 + "RightX";
-		public static readonly string RightY = DualShockPs3 + "RightY";
+		public static readonly string RightX = DualShockPs3 + "_RightX";
+		public static readonly string RightY = DualShockPs3 + "_RightY";
 
 		[ButtonMapping(Button.Select, 0)]
 		string _select;
@@ -94,5 +94,13 @@ namespace GP {
 		public override Vector2 GetRightStick() {
 			return new Vector2(Input.GetAxis(RightX), Input.GetAxis(RightY));
 		}
+
+		protected override void BuildSupportedAxes() {
+			SupportedAxes = new string[] {
+				RightX, RightY
+			};
+		}
+
+		public override string[] SupportedAxes { get; protected set; }
 	}
 }

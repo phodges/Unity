@@ -47,13 +47,11 @@ namespace GP {
     [AttributeUsage(AttributeTargets.Property)]
 	public class AxisDataAttr : Attribute {
 
-		public AxisDataAttr(string name, Type t) {
+		public AxisDataAttr(string name) {
 			Name = name;
-			Type = t;
         }
 
 		public string Name { get; private set; }
-		public Type Type { get; private set; }
 	}
 
 	/// <summary>
@@ -63,54 +61,55 @@ namespace GP {
 	/// </summary>
 	public class AxisData {
 
-		[AxisDataAttr("m_Name", typeof(string))]
+		[AxisDataAttr("m_Name")]
 		public string Name { get; set; }
 
-		[AxisDataAttr("descriptiveName", typeof(string))]
+		[AxisDataAttr("descriptiveName")]
 		public string DescriptiveName { get; set; }
 
-		[AxisDataAttr("descriptiveNegativeName", typeof(string))]
+		[AxisDataAttr("descriptiveNegativeName")]
 		public string DescriptiveNegativeName { get; set; }
 
-		[AxisDataAttr("negativeButton", typeof(string))]
+		[AxisDataAttr("negativeButton")]
 		public string NegativeButton { get; set; }
 
-		[AxisDataAttr("positiveButton", typeof(string))]
+		[AxisDataAttr("positiveButton")]
 		public string PositiveButton { get; set; }
 
-		[AxisDataAttr("altNegativeButton", typeof(string))]
+		[AxisDataAttr("altNegativeButton")]
 		public string AltNegativeButton { get; set; }
 
-		[AxisDataAttr("altPositiveButton", typeof(string))]
+		[AxisDataAttr("altPositiveButton")]
 		public string AltPositiveButton { get; set; }
 
-		[AxisDataAttr("gravity", typeof(float))]
+		[AxisDataAttr("gravity")]
 		public float Gravity { get; set; }
 
-		[AxisDataAttr("dead", typeof(float))]
+		[AxisDataAttr("dead")]
 		public float DeadZone { get; set; }
 
-		[AxisDataAttr("sensitivity", typeof(float))]
+		[AxisDataAttr("sensitivity")]
 		public float Sensitivity { get; set; }
 
-		[AxisDataAttr("snap", typeof(bool))]
+		[AxisDataAttr("snap")]
 		public bool Snap { get; set; }
 
-		[AxisDataAttr("invert", typeof(bool))]
+		[AxisDataAttr("invert")]
 		public bool Invert { get; set; }
 
-		[AxisDataAttr("type", typeof(int))]
+		[AxisDataAttr("type")]
 		public int Type { get; set; }
 
-		[AxisDataAttr("axis", typeof(int))]
+		[AxisDataAttr("axis")]
 		public int Axis { get; set; }
 
-		[AxisDataAttr("joyNum", typeof(int))]
+		[AxisDataAttr("joyNum")]
 		public int JoystickNumber { get; set; }
 
 		public void ReadProperties(SerializedProperty axis) {
 			PropertyInfo[] properties = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 			foreach(PropertyInfo property in properties) {
+				Type type = property.PropertyType;
 				object[] attrs = property.GetCustomAttributes(typeof(AxisDataAttr), false);
 				foreach(object a in attrs) {
 					AxisDataAttr attr = a as AxisDataAttr;
@@ -118,13 +117,13 @@ namespace GP {
 						string serialName = attr.Name;
 						SerializedProperty serialProperty = GetChildProperty(axis, serialName);
 						if (null != serialProperty) {
-							if (typeof(string) == attr.Type) {
+							if (typeof(string) == type) {
 								property.SetValue(this, serialProperty.stringValue, null);
-							} else if (typeof(int) == attr.Type) {
+							} else if (typeof(int) == type) {
 								property.SetValue(this, serialProperty.intValue, null);
-							} else if (typeof(float) == attr.Type) {
+							} else if (typeof(float) == type) {
 								property.SetValue(this, serialProperty.floatValue, null);
-							} else if (typeof(bool) == attr.Type) {
+							} else if (typeof(bool) == type) {
 								property.SetValue(this, serialProperty.boolValue, null);
 							}
 						}
@@ -136,6 +135,7 @@ namespace GP {
 		public void WriteProperties(SerializedProperty axis) {
 			PropertyInfo[] properties = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 			foreach(PropertyInfo property in properties) {
+				Type type = property.PropertyType;
 				object[] attrs = property.GetCustomAttributes(typeof(AxisDataAttr), false);
 				foreach(object a in attrs) {
 					AxisDataAttr attr = a as AxisDataAttr;
@@ -143,13 +143,13 @@ namespace GP {
 						string serialName = attr.Name;
 						SerializedProperty serialProperty = GetChildProperty(axis, serialName);
 						if (null != serialProperty) {
-							if (typeof(string) == attr.Type) {
+							if (typeof(string) == type) {
 								serialProperty.stringValue = (string)property.GetValue(this, null);
-							} else if (typeof(int) == attr.Type) {
+							} else if (typeof(int) == type) {
 								serialProperty.intValue = (int)property.GetValue(this, null);
-							} else if (typeof(float) == attr.Type) {
+							} else if (typeof(float) == type) {
 								serialProperty.floatValue = (float)property.GetValue(this, null);
-                            } else if (typeof(bool) == attr.Type) {
+                            } else if (typeof(bool) == type) {
 								serialProperty.boolValue = (bool)property.GetValue(this, null);
                             }
                         }
