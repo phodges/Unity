@@ -38,7 +38,7 @@ namespace GP {
 	/// A simple test class used to verify game pad features.
 	/// To use, create a new scene and attach this component to any object. A single test will be made
 	/// when you run your scene for connection of a pad, so be sure to have it plugged in beforehand.
-	/// Use the 'Q' and 'W' buttons on the keyboard to cycle through pages of game pad state data.
+	/// Use the '-' and '=' buttons on the keyboard to cycle through pages of game pad state data.
 	/// 
 	/// Remember to configure your game pad in Unity's input manager before running this code.
 	/// Once compiled, you may use the tool provided (Window --> GamePad --> Configure) found in the window menus.
@@ -64,15 +64,17 @@ namespace GP {
 				_pad = gameObject.AddComponent<GamePadPS3>();
 			} else if (GamePad.IsConnected(GamePadXboxTattieBogle.XboxTattieBogle)) {
 				_pad = gameObject.AddComponent<GamePadXboxTattieBogle>();
+			} else {
+				_pad = gameObject.AddComponent<GamePadStdAxes>();
 			}
 		}
 		
 		// Update is called once per frame
 		void Update () {
-			if (Input.GetKeyUp(KeyCode.Q)) {
+			if (Input.GetKeyUp(KeyCode.Minus)) {
 				_page = (_page - 1 + _numPages) % _numPages;
 			}
-			if (Input.GetKeyUp(KeyCode.W)) {
+			if (Input.GetKeyUp(KeyCode.Equals)) {
                 _page = (_page + 1) % _numPages;
             }
 
