@@ -147,6 +147,7 @@ namespace GP {
 
 		void CreateDefaultAxes() {
 			CreateAxesPs3();
+			CreateAxesTattieBogle();
 		}
 
 		void CreateAxesPs3() {
@@ -173,6 +174,49 @@ namespace GP {
 
 			_defaultAxes.Add(GamePadPS3.DualShockPs3, axes);
 		}
-	}
 
+		void CreateAxesTattieBogle() {
+			AxisData[] axes = new AxisData[4];
+
+			AxisData rightX = axes[0] = new AxisData();
+			rightX.Name = GamePadXboxTattieBogle.RightX;
+			rightX.DescriptiveName = "Xbox (TB) right horizontal input";
+			rightX.DeadZone = 0.19f;
+			rightX.Sensitivity = 1.0f;
+			rightX.Type = (int)AxisType.JoystickAxis;
+			rightX.Axis = 2;
+            rightX.JoystickNumber = 0;
+
+			AxisData rightY = axes[1] = new AxisData();
+			rightY.Name = GamePadXboxTattieBogle.RightY;
+			rightY.DescriptiveName = "Xbox (TB) right vertical input";
+			rightY.DeadZone = 0.19f;
+			rightY.Sensitivity = 1.0f;
+			rightY.Type = (int)AxisType.JoystickAxis;
+			rightY.Axis = 3;
+            rightY.JoystickNumber = 0;
+
+			AxisData triggerL = axes[2] = new AxisData();
+			triggerL.Name = GamePadXboxTattieBogle.LeftTrigger;
+			triggerL.DescriptiveName = "Xbox (TB) left trigger";
+			triggerL.DeadZone = 0.19f;
+			triggerL.Sensitivity = 1.0f;
+			triggerL.Type = (int)AxisType.JoystickAxis;
+			triggerL.Axis = 4;
+			triggerL.JoystickNumber = 0;
+
+			AxisData triggerR = axes[3] = new AxisData();
+			triggerR.Name = GamePadXboxTattieBogle.RightTrigger;
+			triggerR.DescriptiveName = "Xbox (TB) right trigger";
+			triggerR.DeadZone = 0.19f;
+			triggerR.Sensitivity = 1.0f;
+			triggerR.Type = (int)AxisType.JoystickAxis;
+			triggerR.Axis = 5;
+			rightY.Invert = true;	// An inversion is required here also.
+			triggerR.JoystickNumber = 0;
+            
+            _defaultAxes.Add(GamePadXboxTattieBogle.XboxTattieBogle, axes);
+        }
+    }
+    
 }

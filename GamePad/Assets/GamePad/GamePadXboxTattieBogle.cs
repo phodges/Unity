@@ -33,74 +33,80 @@ using System.Collections;
 namespace GP {
 
 	/// <summary>
-	/// Contains both strings used in setting up axes and various button key codes.
+	/// Allows for the use of an Xbox360 controller on OSX, using the driver
+	/// created by Tattie Bogle
+	/// http://tattiebogle.net/index.php/ProjectRoot/Xbox360Controller/OsxDriver
 	/// </summary>
-	public class GamePadPS3 : GamePad {
-		public static readonly string DualShockPs3 = "Sony PLAYSTATION(R)3 Controller";
-		public static readonly string RightX = DualShockPs3 + "_RightX";
-		public static readonly string RightY = DualShockPs3 + "_RightY";
+	public class GamePadXboxTattieBogle : GamePad {
+		public static readonly string XboxTattieBogle = ""; // XXX: InputManager retrieves no name. This is weird and should be investigated.
+		public static readonly string RightX = "TattieBogle_RightX";	// 3rd axis
+		public static readonly string RightY = "TattieBogle_RightY";	// 4th axis
+		public static readonly string LeftTrigger = "TattieBogle_LeftTrigger";	// 5th axis
+		public static readonly string RightTrigger = "TattieBogle_RightTrigger"; // 6th axis
 
-		[ButtonMapping(Button.Select, 0)]
+		[ButtonMapping(Button.Select, 10)]	// Back
 		string _select;
-
-		[ButtonMapping(Button.Start, 3)]
+		
+		[ButtonMapping(Button.Start, 9)]
 		string _start;
-
-		[ButtonMapping(Button.System, 16)]
+		
+		[ButtonMapping(Button.System, 15)]
 		string _system;
-
-		[ButtonMapping(Button.L1, 10)]
+		
+		[ButtonMapping(Button.L1, 13)]
 		string _l1;
 
-		[ButtonMapping(Button.L2, 8)]
+		[AxisToButtonMapping(Button.L2, 2)]
 		string _l2;
-
-		[ButtonMapping(Button.L3, 1)]
+		
+		[ButtonMapping(Button.L3, 11)]
 		string _l3;
-
-		[ButtonMapping(Button.R1, 11)]
+		
+		[ButtonMapping(Button.R1, 14)]
 		string _r1;
 
-		[ButtonMapping(Button.R2, 9)]
+		[AxisToButtonMapping(Button.R2, 3)]
 		string _r2;
-
-		[ButtonMapping(Button.R3, 2)]
+		
+		[ButtonMapping(Button.R3, 12)]
 		string _r3;
-
-		[ButtonMapping(Button.DPadUp, 4)]
+		
+		[ButtonMapping(Button.DPadUp, 5)]
 		string _dpadUp;
-
+		
 		[ButtonMapping(Button.DPadDown, 6)]
 		string _dpadDown;
-
+		
 		[ButtonMapping(Button.DPadLeft, 7)]
 		string _dpadLeft;
-
-		[ButtonMapping(Button.DPadRight, 5)]
+		
+		[ButtonMapping(Button.DPadRight, 8)]
 		string _dpadRight;
-
-		[ButtonMapping(Button.ActionA, 14)] // Cross
+		
+		[ButtonMapping(Button.ActionA, 16)] // A
 		string _actionA;
-
-		[ButtonMapping(Button.ActionB, 13)] // Circle
+		
+		[ButtonMapping(Button.ActionB, 17)] // B
 		string _actionB;
-
-		[ButtonMapping(Button.ActionC, 15)] // Square
+		
+		[ButtonMapping(Button.ActionC, 18)] // X
 		string _actionC;
-
-		[ButtonMapping(Button.ActionD, 12)] // Triangle
+		
+		[ButtonMapping(Button.ActionD, 19)] // Y
 		string _actionD;
 
 		public override Vector2 GetRightStick() {
 			return new Vector2(Input.GetAxis(RightX), Input.GetAxis(RightY));
 		}
-
+		
 		protected override void BuildSupportedAxes() {
 			SupportedAxes = new string[] {
-				RightX, RightY
+				RightX, RightY,
+				LeftTrigger, RightTrigger
 			};
 		}
-
+		
 		public override string[] SupportedAxes { get; protected set; }
+
 	}
 }

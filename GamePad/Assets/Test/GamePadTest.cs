@@ -62,6 +62,8 @@ namespace GP {
 		void Start () {
 			if (GamePad.IsConnected(GamePadPS3.DualShockPs3)) {
 				_pad = gameObject.AddComponent<GamePadPS3>();
+			} else if (GamePad.IsConnected(GamePadXboxTattieBogle.XboxTattieBogle)) {
+				_pad = gameObject.AddComponent<GamePadXboxTattieBogle>();
 			}
 		}
 		
