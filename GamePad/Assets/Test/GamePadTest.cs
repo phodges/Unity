@@ -51,6 +51,7 @@ namespace GP {
 		private const int _numPages = 4;
 
 		private struct State {
+			public bool _unsupported;
 			public float _lastDown;
 			public float _lastUp;
 			public bool _isHeld;
@@ -153,17 +154,23 @@ namespace GP {
 			State state = default(State);
 
 			bool add = !_states.TryGetValue(button, out state);
+			bool supported = _pad.IsSupported(button);
 
-			if (_pad.GetButtonDown(button)) {
-				state._lastDown = Time.time;
+			if (supported) {
+				if (_pad.GetButtonDown(button)) {
+					state._lastDown = Time.time;
+				}
+				if (_pad.GetButtonUp (button)) {
+					state._lastUp = Time.time;
+				}
+				state._isHeld = _pad.GetButtonHeld(button);
+				state._unsupported = false;
+			} else {
+				state._unsupported = true;
 			}
-			if (_pad.GetButtonUp (button)) {
-				state._lastUp = Time.time;
-			}
-			state._isHeld = _pad.GetButtonHeld(button);
 
 			if (add) {
-				if (state._isHeld) {
+				if (state._isHeld || !supported) {
 					_states.Add (button, state);
 				}
 			} else {
@@ -174,8 +181,12 @@ namespace GP {
 		void ReportButtonState(Button button) {
 			State state;
 			if (_states.TryGetValue(button, out state)) {
-				GUILayout.TextField (string.Format ("{0}: {1} (last down = {2:0.00}), (last up = {3:0.00})",
+				if (state._unsupported) {
+					GUILayout.TextField(string.Format("{0}: unsupported", button));
+				} else {
+					GUILayout.TextField (string.Format ("{0}: {1} (last down = {2:0.00}), (last up = {3:0.00})",
 				                                    button, state._isHeld, state._lastDown, state._lastUp));
+				}
 			} else {
 				GUILayout.TextField (string.Format ("{0}: untouched", button));
 			}

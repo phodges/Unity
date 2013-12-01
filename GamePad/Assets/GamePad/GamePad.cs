@@ -168,6 +168,10 @@ namespace GP {
 			return down;
 		}
 
+		public bool IsSupported(Button button) {
+			return _keycodes.ContainsKey(button) || _mappedAxes.ContainsKey(button);
+		}
+
 		public static bool IsConnected(string joystickType) {
 			bool connected = false;
 			string[] joysticks = Input.GetJoystickNames();
