@@ -251,6 +251,8 @@ namespace GP {
 					case MappedAxisState.Down:
 						if (threshold < amount) {
 							mapping.State = MappedAxisState.Held;
+						} else {
+							mapping.State = MappedAxisState.Up;
 						}
 						break;
 					case MappedAxisState.Held:
