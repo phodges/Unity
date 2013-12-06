@@ -43,6 +43,25 @@ namespace GP {
 		private SerializedObject _inputManager;
 		private SerializedProperty _axesArray;
 
+		[System.Flags]
+		private enum JoystickPorts {
+			AllJoysticks = 1 << 0,
+			Joystick1 = 1 << 1,
+			Joystick2 = 1 << 2,
+			Joystick3 = 1 << 3,
+			Joystick4 = 1 << 4,
+			Joystick5 = 1 << 5,
+			Joystick6 = 1 << 6,
+			Joystick7 = 1 << 7,
+			Joystick8 = 1 << 8,
+			Joystick9 = 1 << 9,
+			Joystick10 = 1 << 10,
+			Joystick11 = 1 << 11
+		};
+
+		private Dictionary<System.Type, JoystickPorts> _portMasks = new Dictionary<System.Type, JoystickPorts>();
+
+
 		[MenuItem("Window/GamePad/Configure")]
 		static void ShowGamePadEd() {
 			GamePadEd window = GamePadEd.GetWindow<GamePadEd>();
@@ -57,14 +76,111 @@ namespace GP {
 				_inputManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/InputManager.asset")[0]);
 				_axesArray = _inputManager.FindProperty("m_Axes");
 			}
+			InitialisePortSettings();
 		}
 
 		void OnGUI() {
-			string[] joysticks = Input.GetJoystickNames();
-			int numSticks = null != joysticks ? joysticks.Length : 0;
-			EditorGUILayout.LabelField(string.Format ("num sticks = {0}", numSticks));
-			for (int i=0; i<numSticks; ++i) {
-				UpdateAxisSetup(joysticks[i]);
+			var keyCollection = _portMasks.Keys;
+			System.Type[] controllers = new System.Type[keyCollection.Count];
+			keyCollection.CopyTo(controllers, 0);
+			foreach(var controller in controllers) {
+				UpdatePortSettings(controller);
+			}
+		}
+
+		void UpdatePortSettings(System.Type controllerType) {
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField(controllerType.Name);
+			JoystickPorts currentPorts = _portMasks[controllerType];
+			JoystickPorts updatedPorts = (JoystickPorts)EditorGUILayout.EnumMaskField((System.Enum)currentPorts);
+
+			JoystickPorts added = updatedPorts & ~currentPorts;
+			JoystickPorts removed = currentPorts & ~updatedPorts;
+
+			JoystickPorts lowMask = (JoystickPorts)(1 << 0);
+			int i;
+			if (0 != added) {
+				i = 0;
+				while (0 != added) {
+					if (0 != (added&lowMask)) {
+						AddAxis(controllerType, i);
+					}
+					added = (JoystickPorts) ((int)added >> 1);
+					++i;
+				}
+			}
+			if (0 != removed) {
+				i = 0;
+				while (0 != removed) {
+					if (0 != (removed&lowMask)) {
+						RemoveAxis(controllerType, i);
+					}
+					removed = (JoystickPorts) ((int)removed >> 1);
+					++i;
+				}
+			}
+
+			_portMasks[controllerType] = updatedPorts;
+
+			EditorGUILayout.EndHorizontal();
+		}
+
+		void AddAxis(System.Type controllerType, int joystickNumber) {
+			AxisData[] sourceAxes;
+			if (_defaultAxes.TryGetValue(controllerType, out sourceAxes)) {
+				foreach(AxisData source in sourceAxes) {
+					AxisData copy = source.Clone();
+					copy.Name += string.Format ("@{0}", joystickNumber);
+					copy.JoystickNumber = joystickNumber;
+
+					_axesArray.arraySize++;
+					_inputManager.ApplyModifiedProperties();
+
+					SerializedProperty added = _axesArray.GetArrayElementAtIndex(_axesArray.arraySize - 1);
+					copy.WriteProperties(added);
+					_inputManager.ApplyModifiedProperties();
+				}
+			}
+		}
+
+		void RemoveAxis(System.Type controllerType, int joystickNumber) {
+			AxisData[] sourceAxes;
+			if (_defaultAxes.TryGetValue(controllerType, out sourceAxes)) {
+				int numAxes = _axesArray.arraySize;
+				while (0 < numAxes--) {
+					AxisData entry = GetAxisData(numAxes);
+
+					bool match = false;
+
+					foreach(AxisData source in sourceAxes) {
+						if (entry.Name.StartsWith(source.Name) && entry.JoystickNumber == joystickNumber) {
+							match = true;
+							break;
+						}
+					}
+
+					if (match) {
+						_axesArray.DeleteArrayElementAtIndex(numAxes);
+						_inputManager.ApplyModifiedProperties();
+					}
+				}
+			}
+		}
+
+		void InitialisePortSettings() {
+			_portMasks.Clear();
+			_portMasks.Add (typeof(GamePadPS3), 0);
+			_portMasks.Add (typeof(GamePadXboxTattieBogle), 0);
+
+			if (null != _axesArray) {
+				int numAxes = _axesArray.arraySize;
+				for (int i=0; i<numAxes; ++i) {
+					AxisData axis = GetAxisData(i);
+					System.Type controller = FindControllerForAxis(axis.Name);
+					if (null != controller) {
+						_portMasks[controller] |= (JoystickPorts)(1 << axis.JoystickNumber);
+					}
+				}
 			}
 		}
 
@@ -81,69 +197,21 @@ namespace GP {
 			return data;
 		}
 
-		void UpdateAxisSetup(string joystick) {
-			if (AxesExist(joystick)) {
-				EditorGUILayout.LabelField(string.Format ("'{0}' axes setup ok", joystick));
-			} else if (IsSupportedJoystick(joystick)) {
-				if (GUILayout.Button (string.Format ("Configure '{0}'", joystick))) {
-					ConfigureAxes(joystick);
-				}
-			} else {
-				EditorGUILayout.LabelField(string.Format ("'{0}' unsupported", joystick));
-			}
-		}
-
-		bool AxisExists(string name) {
-			bool exists = false;
-			int totalAxes = _axesArray.arraySize;
-			for (int i=0; i<totalAxes; ++i) {
-				AxisData storedAxis = GetAxisData(i);
-				if (storedAxis.Name == name) {
-					exists = true;
-					break;
-				}
-            }
-			return exists;
-		}
-
-		bool AxesExist(string joystick) {
-			bool ok = false;
-			AxisData[] axes = null;
-			if (_defaultAxes.TryGetValue(joystick, out axes)) {
-				ok = true;
+		System.Type FindControllerForAxis(string name) {
+			System.Type type = null;
+			foreach(var kv in _defaultAxes) {
+				AxisData[] axes = kv.Value;
 				foreach(AxisData axis in axes) {
-					if (!AxisExists(axis.Name)) {
-						ok = false;
+					if (name.StartsWith(axis.Name)) {
+						type = kv.Key;
 						break;
 					}
 				}
-			} else {
-				ok = false;
 			}
-			return ok;
+			return type;
 		}
 
-		bool IsSupportedJoystick(string joystick) {
-			return _defaultAxes.ContainsKey(joystick);
-		}
-
-		void ConfigureAxes(string joystick) {
-			AxisData[] axes = null;
-			if (_defaultAxes.TryGetValue(joystick, out axes)) {
-				foreach(AxisData axis in axes) {
-					if (!AxisExists(axis.Name)) {
-						++_axesArray.arraySize;
-						_inputManager.ApplyModifiedProperties();
-
-						SerializedProperty toAdd = _axesArray.GetArrayElementAtIndex(_axesArray.arraySize - 1);
-						axis.WriteProperties(toAdd);
-						_inputManager.ApplyModifiedProperties();
-					}
-				}
-			}
-		}
-
-		Dictionary<string, AxisData[]> _defaultAxes = new Dictionary<string, AxisData[]>();
+		Dictionary<System.Type, AxisData[]> _defaultAxes = new Dictionary<System.Type, AxisData[]>();
 
 		void CreateDefaultAxes() {
 			CreateAxesPs3();
@@ -160,7 +228,7 @@ namespace GP {
 			rightX.Sensitivity = 1.0f;
 			rightX.Type = (int)AxisType.JoystickAxis;
 			rightX.Axis = 2;
-			rightX.JoystickNumber = 0;	// XXX: Capture from all connected
+			rightX.JoystickNumber = 0;	// Capture from all connected
 
 			AxisData rightY = axes[1] = new AxisData();
 			rightY.Name = GamePadPS3.RightY;
@@ -172,7 +240,7 @@ namespace GP {
 			rightY.Invert = true;		// Apparently we need to flip the right stick to make it match the left.
             rightY.JoystickNumber = 0;
 
-			_defaultAxes.Add(GamePadPS3.DualShockPs3, axes);
+			_defaultAxes.Add(typeof(GamePadPS3), axes);
 		}
 
 		void CreateAxesTattieBogle() {
@@ -215,7 +283,7 @@ namespace GP {
 			rightY.Invert = true;	// An inversion is required here also.
 			triggerR.JoystickNumber = 0;
             
-            _defaultAxes.Add(GamePadXboxTattieBogle.XboxTattieBogle, axes);
+            _defaultAxes.Add(typeof(GamePadXboxTattieBogle), axes);
         }
     }
     

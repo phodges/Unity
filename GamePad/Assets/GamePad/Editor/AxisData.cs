@@ -42,9 +42,8 @@ namespace GP {
 		MouseMovement = 1,
 		JoystickAxis = 2
     }
-    
-    
-    [AttributeUsage(AttributeTargets.Property)]
+	    
+    [AttributeUsage(AttributeTargets.Field)]
 	public class AxisDataAttr : Attribute {
 
 		public AxisDataAttr(string name) {
@@ -62,55 +61,64 @@ namespace GP {
 	public class AxisData {
 
 		[AxisDataAttr("m_Name")]
-		public string Name { get; set; }
+		public string Name;
 
 		[AxisDataAttr("descriptiveName")]
-		public string DescriptiveName { get; set; }
+		public string DescriptiveName;
 
 		[AxisDataAttr("descriptiveNegativeName")]
-		public string DescriptiveNegativeName { get; set; }
+		public string DescriptiveNegativeName;
 
 		[AxisDataAttr("negativeButton")]
-		public string NegativeButton { get; set; }
+		public string NegativeButton;
 
 		[AxisDataAttr("positiveButton")]
-		public string PositiveButton { get; set; }
+		public string PositiveButton;
 
 		[AxisDataAttr("altNegativeButton")]
-		public string AltNegativeButton { get; set; }
+		public string AltNegativeButton;
 
 		[AxisDataAttr("altPositiveButton")]
-		public string AltPositiveButton { get; set; }
+		public string AltPositiveButton;
 
 		[AxisDataAttr("gravity")]
-		public float Gravity { get; set; }
+		public float Gravity;
 
 		[AxisDataAttr("dead")]
-		public float DeadZone { get; set; }
+		public float DeadZone;
 
 		[AxisDataAttr("sensitivity")]
-		public float Sensitivity { get; set; }
+		public float Sensitivity;
 
 		[AxisDataAttr("snap")]
-		public bool Snap { get; set; }
+		public bool Snap;
 
 		[AxisDataAttr("invert")]
-		public bool Invert { get; set; }
+		public bool Invert;
 
 		[AxisDataAttr("type")]
-		public int Type { get; set; }
+		public int Type;
 
 		[AxisDataAttr("axis")]
-		public int Axis { get; set; }
+		public int Axis;
 
 		[AxisDataAttr("joyNum")]
-		public int JoystickNumber { get; set; }
+		public int JoystickNumber;
+
+		public AxisData Clone() {
+			AxisData cloned = new AxisData();
+			FieldInfo[] fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			foreach(FieldInfo field in fields) {
+				field.SetValue(cloned, field.GetValue(this));
+			}
+			return cloned;
+		}
 
 		public void ReadProperties(SerializedProperty axis) {
-			PropertyInfo[] properties = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			foreach(PropertyInfo property in properties) {
-				Type type = property.PropertyType;
-				object[] attrs = property.GetCustomAttributes(typeof(AxisDataAttr), false);
+			FieldInfo[] fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			foreach(FieldInfo field in fields) {
+				Type type = field.FieldType;
+				object[] attrs = field.GetCustomAttributes(typeof(AxisDataAttr), false);
 				foreach(object a in attrs) {
 					AxisDataAttr attr = a as AxisDataAttr;
 					if (null != attr) {
@@ -118,13 +126,13 @@ namespace GP {
 						SerializedProperty serialProperty = GetChildProperty(axis, serialName);
 						if (null != serialProperty) {
 							if (typeof(string) == type) {
-								property.SetValue(this, serialProperty.stringValue, null);
+								field.SetValue(this, serialProperty.stringValue);
 							} else if (typeof(int) == type) {
-								property.SetValue(this, serialProperty.intValue, null);
+								field.SetValue(this, serialProperty.intValue);
 							} else if (typeof(float) == type) {
-								property.SetValue(this, serialProperty.floatValue, null);
+								field.SetValue(this, serialProperty.floatValue);
 							} else if (typeof(bool) == type) {
-								property.SetValue(this, serialProperty.boolValue, null);
+								field.SetValue(this, serialProperty.boolValue);
 							}
 						}
                     }
@@ -133,10 +141,10 @@ namespace GP {
 		}
 
 		public void WriteProperties(SerializedProperty axis) {
-			PropertyInfo[] properties = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			foreach(PropertyInfo property in properties) {
-				Type type = property.PropertyType;
-				object[] attrs = property.GetCustomAttributes(typeof(AxisDataAttr), false);
+			FieldInfo[] fields = GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			foreach(FieldInfo field in fields) {
+				Type type = field.FieldType;
+				object[] attrs = field.GetCustomAttributes(typeof(AxisDataAttr), false);
 				foreach(object a in attrs) {
 					AxisDataAttr attr = a as AxisDataAttr;
                     if (null != attr) {
@@ -144,13 +152,13 @@ namespace GP {
 						SerializedProperty serialProperty = GetChildProperty(axis, serialName);
 						if (null != serialProperty) {
 							if (typeof(string) == type) {
-								serialProperty.stringValue = (string)property.GetValue(this, null);
+								serialProperty.stringValue = (string)field.GetValue(this);
 							} else if (typeof(int) == type) {
-								serialProperty.intValue = (int)property.GetValue(this, null);
+								serialProperty.intValue = (int)field.GetValue(this);
 							} else if (typeof(float) == type) {
-								serialProperty.floatValue = (float)property.GetValue(this, null);
+								serialProperty.floatValue = (float)field.GetValue(this);
                             } else if (typeof(bool) == type) {
-								serialProperty.boolValue = (bool)property.GetValue(this, null);
+								serialProperty.boolValue = (bool)field.GetValue(this);
                             }
                         }
 					}
