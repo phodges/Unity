@@ -45,6 +45,8 @@ namespace GP {
 	/// </summary>
 	public class GamePadTest : MonoBehaviour {
 
+		public int _joystickNumber = 0;
+
 		private GamePad _pad;
 
 		private int _page = 0;
@@ -68,6 +70,7 @@ namespace GP {
 			} else {
 				_pad = gameObject.AddComponent<GamePadStdAxes>();
 			}
+			_pad.Initialise(_joystickNumber);
 		}
 		
 		// Update is called once per frame

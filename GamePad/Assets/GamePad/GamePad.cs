@@ -81,7 +81,7 @@ namespace GP {
 		private static readonly string LeftStickHorizontalName = "Horizontal";
 		private static readonly string LeftStickVerticalName = "Vertical";
 
-		private int _joystickNumber = 0; // TODO: Support more than one pad.
+		private int _joystickNumber = 0;
 
 		private Dictionary<Button, string> _keycodes = new Dictionary<Button, string>();
 
@@ -100,11 +100,6 @@ namespace GP {
 
 		private Dictionary<Button, MappedAxis> _mappedAxes = new Dictionary<Button, MappedAxis>();
 
-		void Start() {
-			BuildSupportedAxes();
-			CompileInputNames();
-		}
-
 		void OnEnable() {
 			if (0 < _mappedAxes.Count) {
 				ClearAnalogueButtonsState();
@@ -114,6 +109,12 @@ namespace GP {
 
 		void OnDestroy() {
 			StopCoroutine("PollAnalogueButtons");
+		}
+
+		public void Initialise(int joystickNumber) {
+			_joystickNumber = joystickNumber;
+			BuildSupportedAxes();
+			CompileInputNames();
 		}
 
 		protected abstract void BuildSupportedAxes();
@@ -265,6 +266,10 @@ namespace GP {
 				yield return null;
 			}
 			yield break;
+		}
+
+		protected string GetAxisName(string baseName) {
+			return string.Format ("{0}@{1}", baseName, _joystickNumber);
 		}
 	}
 

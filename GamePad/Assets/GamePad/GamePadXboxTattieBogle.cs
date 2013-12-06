@@ -96,13 +96,13 @@ namespace GP {
 		string _actionD;
 
 		public override Vector2 GetRightStick() {
-			return new Vector2(Input.GetAxis(RightX), Input.GetAxis(RightY));
+			return new Vector2(Input.GetAxis(SupportedAxes[0]), Input.GetAxis(SupportedAxes[1]));
 		}
 		
 		protected override void BuildSupportedAxes() {
 			SupportedAxes = new string[] {
-				RightX, RightY,
-				LeftTrigger, RightTrigger
+				GetAxisName(RightX), GetAxisName(RightY),
+				GetAxisName(LeftTrigger), GetAxisName(RightTrigger)
 			};
 		}
 		
