@@ -169,6 +169,17 @@ namespace GP {
 			return down;
 		}
 
+		public float GetButtonPressure(Button button) {
+			float pressure = 0.0f;
+			MappedAxis mapping;
+			if (_mappedAxes.TryGetValue(button, out mapping)) {
+				pressure = Input.GetAxis(mapping.Keycode);
+			} else {
+				pressure = GetButtonHeld(button) ? 1.0f : 0.0f;
+			}
+			return pressure;
+		}
+
 		public bool IsSupported(Button button) {
 			return _keycodes.ContainsKey(button) || _mappedAxes.ContainsKey(button);
 		}
@@ -193,7 +204,7 @@ namespace GP {
 					ButtonMapping attr = a as ButtonMapping;
 					string fmt;
 					if (0 < _joystickNumber) {
-						fmt = string.Format ("joysick {0} button {1}", _joystickNumber, attr.Id);
+						fmt = string.Format ("joystick {0} button {1}", _joystickNumber, attr.Id);
 					} else {
 						fmt = string.Format ("joystick button {0}", attr.Id);
 					}
