@@ -30,6 +30,10 @@ namespace GP {
             }
         }
 
+		public static void Terminate() {
+			_pads = null;
+		}
+
         public static List<Type> GetConnectedPads() {
             List<Type> connected = new List<Type>();
 
