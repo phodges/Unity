@@ -169,8 +169,9 @@ namespace GP {
 
 		void InitialisePortSettings() {
 			_portMasks.Clear();
-			_portMasks.Add (typeof(GamePadPS3), 0);
-			_portMasks.Add (typeof(GamePadXboxTattieBogle), 0);
+            foreach (var kv in _defaultAxes) {
+                _portMasks.Add(kv.Key, 0);
+            }
 
 			if (null != _axesArray) {
 				int numAxes = _axesArray.arraySize;
@@ -216,6 +217,7 @@ namespace GP {
 		void CreateDefaultAxes() {
 			CreateAxesPs3();
 			CreateAxesTattieBogle();
+            CreateAxesPC();
 		}
 
 		void CreateAxesPs3() {
@@ -262,6 +264,7 @@ namespace GP {
 			rightY.Sensitivity = 1.0f;
 			rightY.Type = (int)AxisType.JoystickAxis;
 			rightY.Axis = 3;
+            rightY.Invert = true;	// An inversion is required here also.
             rightY.JoystickNumber = 0;
 
 			AxisData triggerL = axes[2] = new AxisData();
@@ -280,10 +283,61 @@ namespace GP {
 			triggerR.Sensitivity = 1.0f;
 			triggerR.Type = (int)AxisType.JoystickAxis;
 			triggerR.Axis = 5;
-			rightY.Invert = true;	// An inversion is required here also.
 			triggerR.JoystickNumber = 0;
             
             _defaultAxes.Add(typeof(GamePadXboxTattieBogle), axes);
+        }
+
+        void CreateAxesPC() {
+            AxisData[] axes = new AxisData[5];
+
+            AxisData rightX = axes[0] = new AxisData();
+            rightX.Name = GamePadXboxPC.RightX;
+            rightX.DescriptiveName = "Xbox right horizontal input";
+            rightX.DeadZone = 0.19f;
+            rightX.Sensitivity = 1.0f;
+            rightX.Type = (int)AxisType.JoystickAxis;
+            rightX.Axis = 3;
+            rightX.JoystickNumber = 0;
+
+            AxisData rightY = axes[1] = new AxisData();
+            rightY.Name = GamePadXboxPC.RightY;
+            rightY.DescriptiveName = "Xbox right vertical input";
+            rightY.DeadZone = 0.19f;
+            rightY.Sensitivity = 1.0f;
+            rightY.Type = (int)AxisType.JoystickAxis;
+            rightY.Axis = 4;
+            rightY.Invert = true;	// An inversion is required here also.
+            rightY.JoystickNumber = 0;
+
+            AxisData triggerL = axes[2] = new AxisData();
+            triggerL.Name = GamePadXboxPC.Trigger;
+            triggerL.DescriptiveName = "Xbox triggers";
+            triggerL.DeadZone = 0.19f;
+            triggerL.Sensitivity = 1.0f;
+            triggerL.Type = (int)AxisType.JoystickAxis;
+            triggerL.Axis = 2;
+            triggerL.JoystickNumber = 0;
+
+            AxisData dpadL = axes[3] = new AxisData();
+            dpadL.Name = GamePadXboxPC.DpadX;
+            dpadL.DescriptiveName = "Xbox dpad horizontal input";
+            dpadL.DeadZone = 0.19f;
+            dpadL.Sensitivity = 1.0f;
+            dpadL.Type = (int)AxisType.JoystickAxis;
+            dpadL.Axis = 5;
+            dpadL.JoystickNumber = 0;
+
+            AxisData dpadR = axes[4] = new AxisData();
+            dpadR.Name = GamePadXboxPC.DpadY;
+            dpadR.DescriptiveName = "Xbox dpad vertical input";
+            dpadR.DeadZone = 0.19f;
+            dpadR.Sensitivity = 1.0f;
+            dpadR.Type = (int)AxisType.JoystickAxis;
+            dpadR.Axis = 6;
+            dpadR.JoystickNumber = 0;
+
+            _defaultAxes.Add(typeof(GamePadXboxPC), axes);
         }
     }
     

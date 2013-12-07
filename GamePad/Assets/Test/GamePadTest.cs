@@ -50,7 +50,7 @@ namespace GP {
 		private GamePad _pad;
 
 		private int _page = 0;
-		private const int _numPages = 4;
+		private const int _numPages = 5;
 
 		private struct State {
 			public bool _unsupported;
@@ -65,6 +65,8 @@ namespace GP {
 		void Start () {
 			if (GamePad.IsConnected(GamePadPS3.DualShockPs3)) {
 				_pad = gameObject.AddComponent<GamePadPS3>();
+            } else if (GamePad.IsConnected(GamePadXboxPC.XboxPC)) {
+                _pad = gameObject.AddComponent<GamePadXboxPC>();
 			} else if (GamePad.IsConnected(GamePadXboxTattieBogle.XboxTattieBogle)) {
 				_pad = gameObject.AddComponent<GamePadXboxTattieBogle>();
 			} else {
@@ -148,6 +150,9 @@ namespace GP {
 				ReportButtonState(Button.Start);
 				ReportButtonState(Button.System);
 				break;
+                case 4:
+                ListConnectedJoysticks();
+                break;
 			}
 
 			GUILayout.EndArea();
@@ -194,6 +199,14 @@ namespace GP {
 				GUILayout.TextField (string.Format ("{0}: untouched", button));
 			}
 		}
+
+        void ListConnectedJoysticks() {
+            string[] joysticks = Input.GetJoystickNames();
+            GUILayout.Label(string.Format("{0} connected devices", joysticks.Length));
+            foreach (string j in joysticks) {
+                GUILayout.Label(j);
+            }
+        }
 	}
 
 }
