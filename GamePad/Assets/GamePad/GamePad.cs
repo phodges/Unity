@@ -71,6 +71,16 @@ namespace GP {
 		public bool Reflected { get; private set; }
 	}
 
+    [AttributeUsage(AttributeTargets.Class)]
+    public class SupportedPad : Attribute {
+
+        public SupportedPad(string padName) {
+            PadName = padName;
+        }
+
+        public string PadName { get; private set; }
+    }
+
 	/// <summary>
 	/// The abstract game pad class provides method to query stick and button status.
 	/// Reflection is used to gather button IDs from derived classes, caching key code 
@@ -182,18 +192,6 @@ namespace GP {
 
 		public bool IsSupported(Button button) {
 			return _keycodes.ContainsKey(button) || _mappedAxes.ContainsKey(button);
-		}
-
-		public static bool IsConnected(string joystickType) {
-			bool connected = false;
-			string[] joysticks = Input.GetJoystickNames();
-			foreach(string joystick in joysticks) {
-				if (joystick == joystickType) {
-					connected = true;
-					break;
-				}
-			}
-			return connected;
 		}
 
 		private void CompileInputNames() {

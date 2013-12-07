@@ -35,10 +35,11 @@ namespace GP {
 	/// <summary>
 	/// Contains both strings used in setting up axes and various button key codes.
 	/// </summary>
+    [SupportedPad(GamePadPS3.DualShockPs3)]
 	public class GamePadPS3 : GamePad {
-		public static readonly string DualShockPs3 = "Sony PLAYSTATION(R)3 Controller";
-		public static readonly string RightX = DualShockPs3 + "_RightX";
-		public static readonly string RightY = DualShockPs3 + "_RightY";
+		public const string DualShockPs3 = "Sony PLAYSTATION(R)3 Controller";
+        public const string RightX = DualShockPs3 + "_RightX";
+		public const string RightY = DualShockPs3 + "_RightY";
 
 		[ButtonMapping(Button.Select, 0)]
 		string _select;

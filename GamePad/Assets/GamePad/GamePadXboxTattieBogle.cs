@@ -37,8 +37,9 @@ namespace GP {
 	/// created by Tattie Bogle
 	/// http://tattiebogle.net/index.php/ProjectRoot/Xbox360Controller/OsxDriver
 	/// </summary>
+    [SupportedPad(GamePadXboxTattieBogle.XboxTattieBogle)]
 	public class GamePadXboxTattieBogle : GamePad {
-		public static readonly string XboxTattieBogle = ""; // XXX: InputManager retrieves no name. This is weird and should be investigated.
+		public const string XboxTattieBogle = ""; // XXX: InputManager retrieves no name. This is weird and should be investigated.
 		public static readonly string RightX = "TattieBogle_RightX";	// 3rd axis
 		public static readonly string RightY = "TattieBogle_RightY";	// 4th axis
 		public static readonly string LeftTrigger = "TattieBogle_LeftTrigger";	// 5th axis

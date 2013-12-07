@@ -63,15 +63,9 @@ namespace GP {
 
 		// Use this for initialization
 		void Start () {
-			if (GamePad.IsConnected(GamePadPS3.DualShockPs3)) {
-				_pad = gameObject.AddComponent<GamePadPS3>();
-            } else if (GamePad.IsConnected(GamePadXboxPC.XboxPC)) {
-                _pad = gameObject.AddComponent<GamePadXboxPC>();
-			} else if (GamePad.IsConnected(GamePadXboxTattieBogle.XboxTattieBogle)) {
-				_pad = gameObject.AddComponent<GamePadXboxTattieBogle>();
-			} else {
-				_pad = gameObject.AddComponent<GamePadStdAxes>();
-			}
+            GamePadFactory.Initialise();
+            List<System.Type> connected = GamePadFactory.GetConnectedPads();
+            _pad = gameObject.AddComponent(connected[0]) as GamePad;
 			_pad.Initialise(_joystickNumber);
 		}
 		
